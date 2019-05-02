@@ -12,6 +12,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     boolean flagMulti = false;
 
     public static boolean DEBUG = true;
+    public  int LastType;   //последний тип
 
     private Map<String, Elem> variables = new HashMap<String, Elem>();
     private Map<String, Elem> functions = new HashMap<String, Elem>();
@@ -36,7 +37,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         return super.visitSimpledeclaration(ctx);
     }
@@ -46,11 +47,12 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     public Elem visitSelectionstatement(CPPParser.SelectionstatementContext ctx) {
         if( DEBUG ) {
             System.out.println("visitSelectionstatement");
+
             for (int i = 0; i < ctx.children.size(); i++) {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         int count = ctx.getChildCount();
 
@@ -73,7 +75,8 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 }
             }
         } catch (Exception e) {
-            System.out.println("В if творится какая то грязь");
+            System.out.println("Какая-то беда в if");
+            System.out.println(e.toString());
             System.exit(1);
         }
         // Чтобы мы не обработали заново true false, делаем так
@@ -89,18 +92,20 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         if(ctx.getChild(0).getText().equals("{") && ctx.getChild(2).getText().equals("}") ){
             //добавляем новую мапу в список
             Map<String, Elem> tmp = new HashMap<String, Elem>();
             list.add(tmp);
+            System.out.println("Добавлен блок. Глубина - "+ list.size());
 
             // обрабатываем выражение в блоке
             super.visit(ctx.getChild(1));
 
             //удаляем последний мап
             this.list.remove(this.list.size()-1);
+            System.out.println("Блок удален. Глубина - "+ list.size());
         }
 
 
@@ -116,7 +121,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
 
         // 3 если сравнение
@@ -164,7 +169,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         // 3 если сравнение
         if( ctx.getChildCount() == 3){
@@ -200,9 +205,9 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                     System.out.println(tmp);
                 }
                 if( ctx.getChildCount() == 3 && ctx.getChild(1).getText().equals("=")){
-                    System.out.println("вот и присваивание подъехало");
+                    System.out.println("Будем присваивать");
                 }
-                System.out.println("#########################");
+                System.out.println("----------------");
             }
         }
         if( ctx.getChildCount() == 3 && ctx.getChild(1).getText().equals("=")){
@@ -224,11 +229,12 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     public Elem visitInitdeclarator(CPPParser.InitdeclaratorContext ctx) {
         String value = ")))";
         if( DEBUG ){
+            System.out.println("Список чилдренов контекста");
             for(int i = 0 ; i < ctx.children.size(); i++){
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         Elem elem = null;
         if(ctx.getChildCount() > 1){
@@ -236,12 +242,17 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
             value = elem.getText();
         }
         String name = ctx.getChild(0).getText();
-        Map<String,Elem> lastMap = nu
+        Map<String,Elem> lastMap = null;
         if( list.size()!= 0)
-            Map<String,Elem> lastMap = this.list.get(list.size()-1);
-        if(lastMap.get(name) == null){
+            lastMap = this.list.get(list.size()-1);
+
+        if(lastMap.get( name ) == null){
             // такой переменной еще не было
-            Elem tmp = new Elem(elem.getTypeLexeme(), elem.getText());
+            Elem tmp;
+            if (elem != null)
+                tmp = new Elem(elem.getTypeLexeme(), elem.getText());
+            else
+                tmp = new Elem(elem.getTypeLexeme(), "0");
             lastMap.put(name, tmp);
         }else{
             System.out.println("переменная '" + name + "' уже объявлена");
@@ -260,7 +271,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         if( ctx.getChildCount() > 1 && ctx.getChild(0).getText().equals("printf")){
             String str = ctx.getChild(2).getText();
@@ -289,7 +300,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         if( ctx.getChildCount() == 1){
             Elem elem = findUpElem(ctx.getChild(0).getText());
@@ -327,7 +338,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
 
         // Если ребенок один, то значит тут просто 1 число
@@ -359,7 +370,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
 
         // Если ребенок один, то значит тут просто 1 число
@@ -392,7 +403,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
-            System.out.println("#########################");
+            System.out.println("----------------");
         }
         String value = ctx.getChild(0).getText();
         // Ищем вхождение точки в строке, если оно есть то это дабл, иначе это инт

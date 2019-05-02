@@ -27,23 +27,37 @@ public class Main {
 //                "   }" + "\n" +
 //                "}";
 
+//        String str = "void main(){\n" +
+//                "   int b = 2 ;\n" +
+//                "   int c = 3;\n" +
+//                "   int result = 13;\n" +
+//                "   if (b == 2) {\n" +
+//                "      if (c == 4) {\n" +
+//                "        result = 1;\n" +
+//                "        result = 1;\n" +
+//                "      } else {\n" +
+//                "        result = 10 / 2;\n" +
+//                "      } \n" +
+//                "   } else {\n" +
+//                "       \n" +
+//                "   }\n" +
+//                "   \tprintf(result);\n" +
+//                "}";
+
         String str = "void main(){\n" +
                 "   int b = 2 ;\n" +
-                "   int c = 3;\n" +
-                "   int result = 13;\n" +
+                "   int result ;\n" +
                 "   if (b == 2) {\n" +
-                "      if (c == 4) {\n" +
-                "        result = 1;\n" +
-                "      } else {\n" +
                 "        result = 10 / 2;\n" +
                 "      } \n" +
-                "   } else {\n" +
-                "       \n" +
+                "   else {\n" +
+                "        result = 5 / 2;\n" +
                 "   }\n" +
                 "   \tprintf(result);\n" +
                 "}";
 
         System.out.println(str);
+
         CPPLexer lexer = new CPPLexer (CharStreams.fromString(str));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CPPParser parser = new CPPParser(tokens);
