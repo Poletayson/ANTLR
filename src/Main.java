@@ -46,13 +46,23 @@ public class Main {
 
         String str = "void main(){\n" +
                 "   int b = 2 ;\n" +
-                "   int result ;\n" +
-                "   if (b == 2) {\n" +
-                "        result = 10 / 2;\n" +
+                "   int result = 4;\n" +
+                "   result = result + b;\n" +
+                "   if (b != 3) {\n" +
+                "        result = result + 2;\n" +
+                "        if (b != 2) {\n" +
+                "           result = result + 2;\n" +
+                "         } \n" +
+                "       else {\n" +
+                "           b = result + 2;\n" +
+                "       }\n" +
                 "      } \n" +
+
                 "   else {\n" +
-                "        result = 5 / 2;\n" +
+                "        int result = result + 2;\n" +
                 "   }\n" +
+
+                "   \tprintf(b);\n" +
                 "   \tprintf(result);\n" +
                 "}";
 

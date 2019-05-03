@@ -26,8 +26,8 @@ grammar CPP;
 //grammar CPP14;
 /*Basic concepts*/
 
-
 translationunit
+
    : declarationseq? EOF
    ;
 /*Expressions*/

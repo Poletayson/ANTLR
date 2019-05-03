@@ -11,8 +11,8 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
 
     boolean flagMulti = false;
 
-    public static boolean DEBUG = true;
-    public  int LastType;   //последний тип
+    public static boolean DEBUG = false;
+    public  TypeLexem LastType;   //последний тип
 
     private Map<String, Elem> variables = new HashMap<String, Elem>();
     private Map<String, Elem> functions = new HashMap<String, Elem>();
@@ -21,24 +21,65 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
 
 
 
+//    public Elem Search (String name) {
+//        Elem searchEl = null;
+//        for (int i = list.size() - 1; i >= 0; i--)
+//        {
+//
+//        }
+//
+//
+//        if( ctx.getChildCount() == 3 && ctx.getChild(1).getText().equals("=")){
+//            String str = ctx.getChild(0).getText();
+//            if(this.variables.get(str) != null){
+//                Elem elem = super.visit(ctx.getChild(2));
+//                this.variables.put(str, elem);
+//            }else {
+//                System.out.println("переменная '"+ str + "' не определена, присваивание невозможно!");
+//
+//            }
+//        }
+//
+//        if( DEBUG )
+//            System.out.println("visitTranslationunit");
+//
+//        functions.put("printf", new Elem(TypeLexem.VOID,"printf"));
+//
+//        return super.visitTranslationunit(ctx);
+//    }
+
+
+
+
     @Override
     public Elem visitTranslationunit(CPPParser.TranslationunitContext ctx) {
+        if( DEBUG )
+            System.out.println("visitTranslationunit");
+
         functions.put("printf", new Elem(TypeLexem.VOID,"printf"));
 
         return super.visitTranslationunit(ctx);
     }
 
+    //простое описание
     @Override
     public Elem visitSimpledeclaration(CPPParser.SimpledeclarationContext ctx) {
 
         String type = ctx.getChild(0).getText();
         if( DEBUG ){
+            System.out.println("visitSimpledeclaration");
+            System.out.println("Список чилдренов:");
             for(int i = 0 ; i < ctx.children.size(); i++){
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
             }
             System.out.println("----------------");
         }
+//последний тип - инт или дабл. Если просто описание переменной, такой тип и будет
+        if (type.equals("int"))
+            this.LastType = TypeLexem.INT;
+        else
+            this.LastType = TypeLexem.DOUBLE;
         return super.visitSimpledeclaration(ctx);
     }
 
@@ -86,7 +127,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
 
     @Override
     public Elem visitCompoundstatement(CPPParser.CompoundstatementContext ctx) {
-        if( true ) {
+        if( DEBUG ) {
             System.out.println("visitRelationalexpression");
             for (int i = 0; i < ctx.children.size(); i++) {
                 String tmp = ctx.getChild(i).getText();
@@ -108,8 +149,9 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
             System.out.println("Блок удален. Глубина - "+ list.size());
         }
 
-
-        return super.visitCompoundstatement(ctx);
+        // Чтобы мы не обработали заново true false, делаем так
+        return new Elem(TypeLexem.VOID,"");
+        //return super.visitCompoundstatement(ctx);
     }
 
     // >= <= > <
@@ -198,8 +240,9 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     @Override
     public Elem visitAssignmentexpression(CPPParser.AssignmentexpressionContext ctx) {
         if( DEBUG ){
+            System.out.println("visitAssignmentexpression");
             if( ctx.getChildCount() > 0){
-                System.out.println("visitAssignmentexpression");
+
                 for(int i = 0 ; i < ctx.children.size(); i++){
                     String tmp = ctx.getChild(i).getText();
                     System.out.println(tmp);
@@ -212,9 +255,11 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
         }
         if( ctx.getChildCount() == 3 && ctx.getChild(1).getText().equals("=")){
             String str = ctx.getChild(0).getText();
-            if(this.variables.get(str) != null){
+            if(this.findUpElem(str) != null){
                 Elem elem = super.visit(ctx.getChild(2));
-                this.variables.put(str, elem);
+
+                Map<String, Elem> curHM = findUpHashMap(str);
+                curHM.put(str, elem);
             }else {
                 System.out.println("переменная '"+ str + "' не определена, присваивание невозможно!");
 
@@ -229,6 +274,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     public Elem visitInitdeclarator(CPPParser.InitdeclaratorContext ctx) {
         String value = ")))";
         if( DEBUG ){
+            System.out.println("visitInitdeclarator");
             System.out.println("Список чилдренов контекста");
             for(int i = 0 ; i < ctx.children.size(); i++){
                 String tmp = ctx.getChild(i).getText();
@@ -252,7 +298,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
             if (elem != null)
                 tmp = new Elem(elem.getTypeLexeme(), elem.getText());
             else
-                tmp = new Elem(elem.getTypeLexeme(), "0");
+                tmp = new Elem(LastType, "0");      //у нас нет инициализации, берем тот тип, который указали
             lastMap.put(name, tmp);
         }else{
             System.out.println("переменная '" + name + "' уже объявлена");
@@ -317,7 +363,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
 
         return super.visitUnqualifiedid(ctx);
     }
-
+//поиск переменной во ВСЕХ хешмапах
     private Elem findUpElem(String nameVariable){
         Elem result = null;
         for(int i = list.size()-1 ; i >= 0; i--){
@@ -328,6 +374,19 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
             }
         }
         return result;
+    }
+
+//поиск хешмапа с переменной
+    private Map<String, Elem> findUpHashMap(String nameVariable){
+        Map<String, Elem> currentMap = null;
+        //Elem result = null;
+        for(int i = list.size()-1 ; i >= 0; i--){
+            currentMap = this.list.get(i);
+            if( currentMap.get(nameVariable) != null){
+                break;
+            }
+        }
+        return currentMap;
     }
 
     // + -
@@ -399,6 +458,7 @@ public class MyKek extends CPPBaseVisitor<Elem>    {
     @Override
     public Elem visitLiteral(CPPParser.LiteralContext ctx) {
         if( DEBUG ){
+            System.out.println("visitLiteral");
             for(int i = 0 ; i < ctx.children.size(); i++){
                 String tmp = ctx.getChild(i).getText();
                 System.out.println(tmp);
